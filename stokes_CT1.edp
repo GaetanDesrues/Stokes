@@ -79,7 +79,7 @@ for (int k=0;k<3;++k) // Pour k=7, ça devient trop gros
     Stokes;
 
     // Visualisation de la solution
-    plot(u1, u2, fill=true,value=true,boundary=true,wait=true);
+    plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
 
     // Solution exacte projetee dans Vh
     // Vh ue;
