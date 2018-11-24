@@ -26,7 +26,7 @@ border Gamma3(t=0,1) {x=0; y=1-t;};
 // border Gamma3(t=0,1) {x=0; y=1-t;};
 
 // Boucle sur une famille de maillages de plus en plus fins
-for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
+for (int k=0;k<3;++k) // Pour k=7, ça devient trop gros
   {
     // Construction du maillage
     int n = 10*2^k; // Nombre de points par côté
@@ -39,8 +39,8 @@ for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
     tfile << "  Nombre de triangles dans le maillage : " << Th.nt << endl;
 
     // Affichage et sortie fichierdu maillage seul
-    plot(Gamma1(n)+Gamma2(n)+Gamma3(n));
-    plot(Th, wait=1, ps="laplace.eps");
+    // plot(Gamma1(n)+Gamma2(n)+Gamma3(n));
+    // plot(Th, wait=1, ps="laplace.eps");
 
     // Définition de l'espace de discrétisation. Ici on discrétise
     // V=H^1_0(\Omega) avec des éléments finis P1-Lagrange
@@ -52,44 +52,48 @@ for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
     // Définition de la formulation variationnelle dans Vh
 
     // On a besoin de 2 fonctions u et v dans Vh
-    Vh u, v, p, uu, vv, pp;
+    Vh u1, u2, p, v1, v2, q;
     // D'une fonction definie de manière analytique (pour le second membre)
-    func f = [1,1];
+    func f1 = 1;
+    func f2 = 1;
     // Qui respecte les conditions aux limites
 
     func g = 0;
 
-    func solExacte = [x, -y];
+    func solExacteX = x;
+    func solExacteY = -y;
+
+    real nu=1.;
+
+    // varf aF(u,v)=int2d(Th)(  f*v );
 
     // Voici finalement notre problème, avec son solveur linéaire
-    problem stokes([u,v,p],[uu,vv,pp],solver=UMFPACK) =
-      int2d(Th)(
-        dx(u)*dx(uu) + dy(u)*dy(uu)
-        + dx(v)*dx(vv) + dy(v)*dy(vv)
-        + dx(p)*uu + dy(p)*vv
-        + pp*(dx(u) + dy(v))
-      )
-      - int2d(Th)( f*v ) + on(Gamma1,Gamma2,Gamma3,u=0);
+    problem Stokes([u1,u2,p],[v1,v2,q], solver=Crout) =
+      int2d(Th)(nu*(dx(u1)*dx(v1) +dy(u1)*dy(v1)+dx(u2)*dx(v2)
+      + dy(u2)*dy(v2)) + p*q*(0.000001) /*ne pas oublier ce terme*/
+      - p*dx(v1) - p*dy(v2) - dx(u1)*q - dy(u2)*q )
+      - int2d(Th) (f1*v1 + f2*v2)
+      + on(Gamma1, Gamma2, Gamma3, u1=solExacteX, u2=solExacteY);
 
     // Résolution du système linéaire
-    stokes;
+    Stokes;
 
     // Visualisation de la solution
-    //plot(u, fill=true,value=true,boundary=true,wait=true);
+    plot(u1, u2, fill=true,value=true,boundary=true,wait=true);
 
     // Solution exacte projetee dans Vh
-    Vh ue;
-    ue = x*(1-x)*y*(1-y); // Expression de la solution exacte
+    // Vh ue;
+    // ue = x*(1-x)*y*(1-y); // Expression de la solution exacte
 
     // Calcul des erreurs
-    real normeL2, errL2;
-    normeL2 = sqrt( int2d(Th) ( (ue)^2 ) );
-    errL2 = sqrt( int2d(Th) ( (u-ue)^2 ) );
-
-    real t2 = clock(); // Pour mesure du temps cpu
-
-    tfile << "  Erreur L2 relative : " << errL2/normeL2 << endl;
-    tfile << "  Temps CPU total : " << t2-t1 << endl;
-
-    gfile << 1./n << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
+    // real normeL2, errL2;
+    // normeL2 = sqrt( int2d(Th) ( (ue)^2 ) );
+    // errL2 = sqrt( int2d(Th) ( (u-ue)^2 ) );
+    //
+    // real t2 = clock(); // Pour mesure du temps cpu
+    //
+    // tfile << "  Erreur L2 relative : " << errL2/normeL2 << endl;
+    // tfile << "  Temps CPU total : " << t2-t1 << endl;
+    //
+    // gfile << 1./n << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
   }
