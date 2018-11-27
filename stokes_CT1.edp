@@ -26,7 +26,7 @@ border Gamma3(t=0,1) {x=0; y=1-t;};
 // border Gamma3(t=0,1) {x=0; y=1-t;};
 
 // Boucle sur une famille de maillages de plus en plus fins
-for (int k=0;k<3;++k) // Pour k=7, ça devient trop gros
+for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
   {
     // Construction du maillage
     int n = 10*2^k; // Nombre de points par côté
@@ -60,10 +60,11 @@ for (int k=0;k<3;++k) // Pour k=7, ça devient trop gros
 
     func g = 0;
 
-    func solExacteX = x;
-    func solExacteY = -y;
+    func uExacteX = x;
+    func uExacteY = -y;
+    func pExacte = x + y;
 
-    real nu=1.;
+    real nu = 1;
 
     // varf aF(u,v)=int2d(Th)(  f*v );
 
@@ -73,27 +74,42 @@ for (int k=0;k<3;++k) // Pour k=7, ça devient trop gros
       + dy(u2)*dy(v2)) + p*q*(0.000001) /*ne pas oublier ce terme*/
       - p*dx(v1) - p*dy(v2) - dx(u1)*q - dy(u2)*q )
       - int2d(Th) (f1*v1 + f2*v2)
-      + on(Gamma1, Gamma2, Gamma3, u1=solExacteX, u2=solExacteY);
+      + on(Gamma1, Gamma2, Gamma3, u1=uExacteX, u2=uExacteY);
 
     // Résolution du système linéaire
     Stokes;
 
     // Visualisation de la solution
-    plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
+    // plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
 
     // Solution exacte projetee dans Vh
-    // Vh ue;
-    // ue = x*(1-x)*y*(1-y); // Expression de la solution exacte
+    Vh uxe, uye, pe;
+    uxe = uExacteX; // vitesse
+    uye = uExacteY;
+    pe = pExacte; // pression
+
+    // plot([uxe, uye], fill=true,value=true,boundary=true,wait=true);
+    // plot(pe, fill=true,value=true,boundary=true,wait=true);
 
     // Calcul des erreurs
-    // real normeL2, errL2;
-    // normeL2 = sqrt( int2d(Th) ( (ue)^2 ) );
-    // errL2 = sqrt( int2d(Th) ( (u-ue)^2 ) );
+    real normeL2, errL2, normeH1, errH1;
+    normeL2 = sqrt( int2d(Th) ( (p)^2 ) );
+    errL2 = sqrt( int2d(Th) ( (p-pe)^2 ) );
+    cout << "Erreur pression : " << errL2/normeL2 << endl;
+
+    // Norme H1 de la vitesse
+    Vh uerrx = u1-uxe;
+    Vh uerry = u2-uye;
+
+    normeH1 = sqrt(int2d(Th) (u1^2+u2^2+dx(u1)^2+dx(u2)^2+dy(u1)^2+dy(u2)^2));
+    errH1 = sqrt(int2d(Th) ((uerrx)^2+(uerry)^2+dx(uerrx)^2+dx(uerry)^2+
+      dy(uerrx)^2+dy(uerry)^2));
+    cout << "Erreur Vitesse : " << errH1/normeH1 << endl;
     //
-    // real t2 = clock(); // Pour mesure du temps cpu
+    real t2 = clock(); // Pour mesure du temps cpu
     //
     // tfile << "  Erreur L2 relative : " << errL2/normeL2 << endl;
     // tfile << "  Temps CPU total : " << t2-t1 << endl;
     //
-    // gfile << 1./n << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
+     gfile << 1./n << "  " << errH1/normeH1 << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
   }
