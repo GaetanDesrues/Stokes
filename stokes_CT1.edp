@@ -2,31 +2,19 @@
 
 // Trace de l'éxécution dans un fichier
 ofstream tfile("output/stokes_trace_umfpack.txt");
-// Fichier de sortie sous forme de tableau pour tracé gnuplot
-ofstream gfile("output/stokes_errors_umfpack.txt");
-
 tfile << "Probleme de Stokes" << endl;
 
-gfile << "# Resolution de -\nu Laplacien(u) + \grad(p) = f avec div(u)=0 et u = g au bord" << endl;
-gfile << "# sur le carre [0,1]x[0,1] en elements finis P1 Lagrange" << endl;
-gfile << "# sur une suite de maillages" << endl;
-gfile << "# et pour une solution analytique quadratique en x et y" << endl;
-
-gfile << "# pas h, erreur L^2 relative, erreur relative L^2 sur le gradient, temps CPU" << endl;
+// Fichier de sortie sous forme de tableau pour tracé gnuplot
+ofstream gfile("output/stokes_errors_umfpack.txt");
+gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
 
 // Définition des bord du domaine de calcul carré 1x1
 border Gamma1(t=0,1) {x=t; y=0;};
 border Gamma2(t=0,1) {x=1-t; y=t;};
 border Gamma3(t=0,1) {x=0; y=1-t;};
-// border Gamma4(t=0,1) {x=0; y=1-t;};
-
-// Triangle de sommets (0,0), (1,0), (0,1)
-// border Gamma1(t=0,1) {x=t; y=0;};
-// border Gamma2(t=0,1) {x=1-t; y=t;};
-// border Gamma3(t=0,1) {x=0; y=1-t;};
 
 // Boucle sur une famille de maillages de plus en plus fins
-for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
+for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   {
     // Construction du maillage
     int n = 10*2^k; // Nombre de points par côté
@@ -71,7 +59,7 @@ for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
     // Voici finalement notre problème, avec son solveur linéaire
     problem Stokes([u1,u2,p],[v1,v2,q], solver=Crout) =
       int2d(Th)(nu*(dx(u1)*dx(v1) +dy(u1)*dy(v1)+dx(u2)*dx(v2)
-      + dy(u2)*dy(v2)) + p*q*(0.000001) /*ne pas oublier ce terme*/
+      + dy(u2)*dy(v2)) + p*q*(0.00001) /*pression à moyenne nulle*/
       - p*dx(v1) - p*dy(v2) - dx(u1)*q - dy(u2)*q )
       - int2d(Th) (f1*v1 + f2*v2)
       + on(Gamma1, Gamma2, Gamma3, u1=uExacteX, u2=uExacteY);
@@ -80,7 +68,7 @@ for (int k=0;k<6;++k) // Pour k=7, ça devient trop gros
     Stokes;
 
     // Visualisation de la solution
-    // plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
+    plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
 
     // Solution exacte projetee dans Vh
     Vh uxe, uye, pe;
