@@ -8,4 +8,5 @@ Usa :
 	freefem++ -v 0 stokesUsawa.edp
 
 plot :
-	gnuplot -p plot.gnu
+	gnuplot -p plot_V.gnu
+	gnuplot -p plot_P.gnu
