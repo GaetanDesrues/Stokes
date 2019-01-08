@@ -69,16 +69,13 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   // plot(pe, fill=true,value=true,boundary=true,wait=true);
 
 
-  Vh [uerrx, uerry, perr];
-  [uerrx, uerry, perr] = [u1-uExacteX, u2-uExacteY, pExacte];
-
-
-
 
   // Calcul des erreurs
+  Vh [uerrx, uerry, perr] = [u1-uExacteX, u2-uExacteY, p-pExacte];
+
   real normeL2, errL2;
   normeL2 = sqrt( int2d(Th) ( (p)^2 ) );
-  errL2 = sqrt( int2d(Th) ( (p-perr)^2 ) );
+  errL2 = sqrt( int2d(Th) ( (perr)^2 ) );
   cout << "Erreur pression : " << errL2/normeL2 << endl;
 
   real normeH1, errH1;
