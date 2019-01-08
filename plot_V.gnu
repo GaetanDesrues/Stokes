@@ -1,7 +1,7 @@
 # set multiplot layout 1, 2 title "Problème de Stokes" font ",14"
 
 set terminal pdf
-hehe = "LU"
+hehe = "CG_eps=10e-6"
 
 set title "Erreur Vitesse ".hehe
 set logscale x

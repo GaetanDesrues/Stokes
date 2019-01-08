@@ -4,7 +4,7 @@
 ofstream tfile("output/stokes_trace_umfpack.txt");
 tfile << "Probleme de Stokes" << endl;
 
-ofstream gfile("output/cas_1/stokes_errors_CG_eps=10e-6_P1_P1.txt");
+ofstream gfile("output/cas_1/stokes_errors_CG_eps=10e-6_P2_P1.txt");
 gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
 
 
@@ -33,7 +33,7 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   // fespace Qh(Th, P0);
   // Qh p, q;
 
-  fespace Vh(Th,[P1,P1,P1]);
+  fespace Vh(Th,[P2,P2,P1]);
   Vh [u1, u2, p], [v1, v2, q];
 
   tfile << "  Nombre de degres de liberte vitesse : " << Vh.ndof << endl;
@@ -46,7 +46,7 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
 
   func uExacteX = x;
   func uExacteY = -y;
-  func pExacte = x + y;
+  func pExacte = x + y - 2*sqrt(2);
 
   func g = 0;
   real nu = 1;
