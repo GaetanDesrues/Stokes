@@ -1,0 +1,2 @@
+# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU
+0.00625  3.14267e-08  2.82902  3.74392
