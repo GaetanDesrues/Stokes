@@ -6,3 +6,6 @@ CT2 :
 
 Usa :
 	freefem++ -v 0 stokesUsawa.edp
+
+plot :
+	gnuplot -p plot.gnu

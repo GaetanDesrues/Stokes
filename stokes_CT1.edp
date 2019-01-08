@@ -3,6 +3,11 @@
 // Trace de l'éxécution dans un fichier
 ofstream tfile("output/stokes_trace_umfpack.txt");
 tfile << "Probleme de Stokes" << endl;
+
+ofstream gfile("output/cas_1/stokes_errors_umfpack_P1.txt");
+gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
+
+
 // Définition des bord du domaine de calcul
 border Gamma1(t=0,1) {x=t; y=0;};
 border Gamma2(t=0,1) {x=1-t; y=t;};
@@ -30,10 +35,6 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
 
   fespace Vh(Th,[P1,P1,P1]);
   Vh [u1, u2, p], [v1, v2, q];
-
-  string strfile = 1; // Entre 1 et 4 pour tester les éléments
-  ofstream gfile("output/cas_"+strfile+"/stokes_errors_umfpack.txt");
-  gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
 
   tfile << "  Nombre de degres de liberte vitesse : " << Vh.ndof << endl;
   // tfile << "  Nombre de degres de liberte pression : " << Qh.ndof << endl;
