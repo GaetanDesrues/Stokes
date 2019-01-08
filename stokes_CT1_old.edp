@@ -22,27 +22,26 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   // plot(Gamma1(n)+Gamma2(n)+Gamma3(n));
   // plot(Th, wait=1, ps="laplace.eps");
 
-
-  string strfile = 1; // Entre 1 et 4 pour tester les éléments
-  ofstream gfile("output/cas_"+strfile+"/stokes_errors_umfpack.txt");
-  gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
-
-  tfile << "  Nombre de degres de liberte vitesse : " << Vh.ndof << endl;
-  tfile << "  Nombre de degres de liberte pression : " << Qh.ndof << endl;
-
-  cout << "*** k = " << k << " --> n = " << n << " , #DOf = " << Vh.ndof << " ***" << endl;
-
   fespace Vh(Th, [P1, P1, P0]);
   Vh [u1, u2, p], [v1, v2, q];
 
+  string strfile = 1; // Entre 1 et 4 pour tester les éléments
+  ofstream gfile("output/cas_"+strfile+"/stokes_errors_umfpack_P1_P0.txt");
+  gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
+
+  tfile << "  Nombre de degres de liberte vitesse : " << Vh.ndof << endl;
+  // tfile << "  Nombre de degres de liberte pression : " << Qh.ndof << endl;
+
+  cout << "*** k = " << k << " --> n = " << n << " , #DOf = " << Vh.ndof << " ***" << endl;
+
+  // Conditions exactes (cf. CT1)
   func f1 = 1;
   func f2 = 1; // Second membre f\in\R^2
-
-  func g = 0;
   func uExacteX = x;
   func uExacteY = -y;
   func pExacte = x + y;
 
+  func g = 0;
   real nu = 1;
 
   // real t1 = clock(); // Pour mesure du temps cpu
@@ -60,27 +59,29 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   // plot([u1, u2], fill=true,value=true,boundary=true,wait=true);
 
   // // Solution exacte projetee dans Vh
-  // Vh uxe, uye, pe;
+  // Vh [uxe, uye, pe];
   // uxe = uExacteX; // vitesse
   // uye = uExacteY;
   // pe = pExacte; // pression
   // // plot([uxe, uye], fill=true,value=true,boundary=true,wait=true);
   // // plot(pe, fill=true,value=true,boundary=true,wait=true);
   //
-  // // Calcul des erreurs
-  // real normeL2, errL2, normeH1, errH1;
-  // normeL2 = sqrt( int2d(Th) ( (p)^2 ) );
-  // errL2 = sqrt( int2d(Th) ( (p-pe)^2 ) );
-  //
-  // // Norme H1 de la vitesse
-  // Vh uerrx = u1-uxe;
-  // Vh uerry = u2-uye;
-  // normeH1 = sqrt(int2d(Th) (u1^2+u2^2+dx(u1)^2+dx(u2)^2+dy(u1)^2+dy(u2)^2));
-  // errH1 = sqrt(int2d(Th) ((uerrx)^2+(uerry)^2+dx(uerrx)^2+dx(uerry)^2+
-  // dy(uerrx)^2+dy(uerry)^2));
+  // Calcul des erreurs
+  real normeL2, errL2, normeH1, errH1;
+  Vh [uerrx, uerry, perr];
+  uerrx = u1-uExacteX;//uxe;
+  uerry = u2-uExacteY;//uye;
+  perr = p-pExacte;
+
+  normeL2 = sqrt( int2d(Th) ( (p)^2 ) );
+  errL2 = sqrt( int2d(Th) ( (p-pe)^2 ) );
+
+  normeH1 = sqrt(int2d(Th) (u1^2+u2^2+dx(u1)^2+dx(u2)^2+dy(u1)^2+dy(u2)^2));
+  errH1 = sqrt(int2d(Th) ((uerrx)^2+(uerry)^2+dx(uerrx)^2+dx(uerry)^2+
+  dy(uerrx)^2+dy(uerry)^2));
   //
   // real t2 = clock(); // Pour mesure du temps cpu
   //
-  // gfile << 1./n << "  " << errH1/normeH1 << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
+  gfile << 1./n << "  " << errH1/normeH1 << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
 
 }
