@@ -75,17 +75,17 @@ for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
   Vh [uerrx, uerry, perr] = [u1-uExacteX, u2-uExacteY, p-pExacte];
 
   real normeL2, errL2;
-  normeL2 = sqrt( int2d(Th) ( (p)^2 ) );
-  errL2 = sqrt( int2d(Th) ( (perr)^2 ) );
+  normeL2 = sqrt( int2d(Th) ((p)^2 ) );
+  errL2 = sqrt( int2d(Th) ((perr)^2 ) );
   cout << "Erreur pression : " << errL2/normeL2 << endl;
 
   real normeH1, errH1;
   normeH1 = sqrt(int2d(Th) (u1^2+u2^2+dx(u1)^2+dx(u2)^2+dy(u1)^2+dy(u2)^2));
   errH1 = sqrt(int2d(Th) ((uerrx)^2+(uerry)^2+dx(uerrx)^2+dx(uerry)^2+
-    dy(uerrx)^2+dy(uerry)^2));
+  dy(uerrx)^2+dy(uerry)^2));
   cout << "Erreur Vitesse : " << errH1/normeH1 << endl;
 
   real t2 = clock();
   gfile << 1./n << "  " << errH1/normeH1 << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
-
+  cout<<"COUCOU"<<endl;
 }
