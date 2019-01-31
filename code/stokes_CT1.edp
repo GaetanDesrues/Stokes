@@ -1,0 +1,91 @@
+//verbosity 0;
+
+// Trace de l'éxécution dans un fichier
+ofstream tfile("output/stokes_trace_umfpack.txt");
+tfile << "Probleme de Stokes" << endl;
+
+ofstream gfile("output/cas_1/stokes_errors_CG_eps=10e-6_P2_P1.txt");
+gfile << "# pas h, erreur H^1 relative vitesse, erreur relative L^2 pression, temps CPU" << endl;
+
+
+// Définition des bord du domaine de calcul
+border Gamma1(t=0,1) {x=t; y=0;};
+border Gamma2(t=0,1) {x=1-t; y=t;};
+border Gamma3(t=0,1) {x=0; y=1-t;};
+
+// Boucle sur une famille de maillages de plus en plus fins
+
+for (int k=0;k<5;++k) // Pour k=7, ça devient trop gros
+{
+  int n = 10*2^k; // Nombre de points par côté
+  real t1 = clock();
+  mesh Th = buildmesh(Gamma1(n)+Gamma2(n)+Gamma3(n));
+  tfile << "k = " << k << endl;
+  tfile << "  Nombre de sommets par cote : " << n << endl;
+  tfile << "  Nombre de sommets dans le maillage : " << Th.nv << endl;
+  tfile << "  Nombre de triangles dans le maillage : " << Th.nt << endl;
+  // Affichage et sortie fichierdu maillage seul
+  // plot(Gamma1(n)+Gamma2(n)+Gamma3(n));
+  // plot(Th, wait=1, ps="laplace.eps");
+
+  // fespace Vh(Th, P0);
+  // Vh u1, u2, v1, v2;
+  // fespace Qh(Th, P0);
+  // Qh p, q;
+
+  fespace Vh(Th,[P2,P2,P1]);
+  Vh [u1, u2, p], [v1, v2, q];
+
+  tfile << "  Nombre de degres de liberte vitesse : " << Vh.ndof << endl;
+  // tfile << "  Nombre de degres de liberte pression : " << Qh.ndof << endl;
+
+  cout << "*** k = " << k << " --> n = " << n << " , #DOf = " << Vh.ndof << " ***" << endl;
+
+  func f1 = 1;
+  func f2 = 1; // Second membre f\in\R^2
+
+  func uExacteX = x;
+  func uExacteY = -y;
+  func pExacte = x + y - 2*sqrt(2);
+
+  func g = 0;
+  real nu = 1;
+
+  // macro uI1 [u1, u2, p] //
+  // macro uI2 [v1, v2, q] //
+
+  // real t1 = clock(); // Pour mesure du temps cpu
+
+  // Solveur = LU, CG, Crout, Cholesky, GMRES, sparsesolver eps=-0.001
+  problem Stokes([u1, u2, p], [v1, v2, q], solver=CG, eps=10e-6) =
+  int2d(Th)(nu*(dx(u1)*dx(v1) +dy(u1)*dy(v1)+dx(u2)*dx(v2)
+  + dy(u2)*dy(v2)) + p*q*(0.0000001) /*pression à moyenne nulle*/
+  - p*dx(v1) - p*dy(v2) - dx(u1)*q - dy(u2)*q )
+  - int2d(Th) (f1*v1 + f2*v2)
+  + on(Gamma1, Gamma2, Gamma3, u1=uExacteX, u2=uExacteY);
+
+  Stokes;
+  // Visualisation de la solution
+  // plot([uxe, uye], fill=true,value=true,boundary=true,wait=true);
+  // plot(pe, fill=true,value=true,boundary=true,wait=true);
+
+
+
+  // Calcul des erreurs
+  Vh [uerrx, uerry, perr] = [u1-uExacteX, u2-uExacteY, p-pExacte];
+
+  real normeL2, errL2;
+  normeL2 = sqrt( int2d(Th) ((p)^2 ) );
+  errL2 = sqrt( int2d(Th) ((perr)^2 ) );
+  cout << "Erreur pression : " << errL2/normeL2 << endl;
+
+  real normeH1, errH1;
+  normeH1 = sqrt(int2d(Th) (u1^2+u2^2+dx(u1)^2+dx(u2)^2+dy(u1)^2+dy(u2)^2));
+  errH1 = sqrt(int2d(Th) ((uerrx)^2+(uerry)^2+dx(uerrx)^2+dx(uerry)^2+
+  dy(uerrx)^2+dy(uerry)^2));
+  cout << "Erreur Vitesse : " << errH1/normeH1 << endl;
+
+  real t2 = clock();
+  gfile << 1./n << "  " << errH1/normeH1 << "  " << errL2/normeL2 << "  " << t2-t1 << endl;
+  cout<<"COUCOU"<<endl;
+}
