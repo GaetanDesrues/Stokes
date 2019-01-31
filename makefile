@@ -1,11 +1,13 @@
+FF = FreeFem++
+
 CT1 :
-	freefem++ -v 0 stokes_CT1.edp
+	$(FF) -v 0 code/stokes_CT1.edp
 
 CT2 :
-	freefem++ -v 0 stokes_CT2.edp
+	$(FF) -v 0 code/stokes_CT2.edp
 
 Usa :
-	freefem++ -v 0 stokesUsawa.edp
+	$(FF) -v 0 code/stokesUsawa.edp
 
 plot :
 	gnuplot -p plot_V.gnu
